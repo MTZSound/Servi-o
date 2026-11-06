@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">Novo Orçamento</title>
+    <!-- Fontes Inter e Caveat (para assinatura manuscrita) -->
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Bibliotecas para gerar PDF e Imagem -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: #F4F7FE;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            background-color: #FFFFFF;
+            width: 100%;
+            max-width: 900px;
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.05);
+            border: 1px solid #E9EDF7;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .icon-box {
+            background-color: #5542F6;
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 20px;
+        }
+
+        .icon-box svg {
+            fill: white;
+            width: 28px;
+            height: 28px;
+        }
+
+        .header-text h1 {
+            font-size: 24px;
+            color: #1B2559;
+            margin-bottom: 4px;
+        }
+
+        .header-text p {
+            font-size: 14px;
+            color: #A3AED0;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #A3AED0;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .input-group input, .input-group select {
+            border: 1px solid #E0E5F2;
+            border-radius: 12px;
+            padding: 14px 16px;
+            font-size: 14px;
+            color: #2B3674;
+            outline: none;
+            transition: 0.3s;
+            width: 100%;
+            background-color: #FFF;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            border-color: #5542F6;
+        }
+
+        .items-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .items-header h3 {
+            font-size: 18px;
+            color: #1B2559;
+        }
+
+        .btn-add {
+            background-color: transparent;
+            color: #5542F6;
+            border: 1px solid #E0E5F2;
+            border-radius: 12px;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-add:hover {
+            background-color: #F4F7FE;
+            border-color: #5542F6;
+        }
+
+        .items-container {
+            background-color: #FAFCFE;
+            border: 1px solid #E0E5F2;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 40px;
+        }
+
+        .item-row {
+            display: flex;
+            gap: 16px;
+            align-items: flex-end;
+            margin-bottom: 16px;
+        }
+
+        .item-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .col-desc { flex: 2; }
+        .col-qtd { width: 100px; }
+        .col-val { width: 150px; }
+        .col-sub { width: 150px; }
+
+        .btn-delete {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 14px 10px;
+            color: #E03131;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-delete svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        .footer-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .total-box {
+            background-color: #F4F7FE;
+            border-radius: 16px;
+            padding: 24px 40px;
+            text-align: center;
+            min-width: 350px;
+        }
+
+        .total-box span {
+            font-size: 14px;
+            font-weight: 700;
+            color: #5542F6;
+            text-transform: uppercase;
+        }
+
+        .total-box h2 {
+            font-size: 42px;
+            color: #5542F6;
+            margin-top: 8px;
+            margin-bottom: 16px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            border: none;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+        }
+
+        .btn-pdf { background-color: #5542F6; }
+        .btn-pdf:hover { background-color: #4332D4; }
+
+        .btn-img { background-color: #3b82f6; }
+        .btn-img:hover { background-color: #2563eb; }
+
+        .btn-whatsapp { background-color: #25D366; }
+        .btn-whatsapp:hover { background-color: #1DA851; }
+
+        .btn-action svg {
+            width: 18px;
+            height: 18px;
+            fill: white;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .item-row { flex-wrap: wrap; }
+            .col-desc { flex: 100%; }
+            .footer-section { flex-direction: column; gap: 24px; align-items: flex-start; }
+            .total-box { width: 100%; min-width: auto; }
+            .action-buttons { flex-direction: column; width: 100%; }
+            .btn-action { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="orcamento-container">
+    <header>
+        <div class="icon-box">
+            <svg viewBox="0 0 24 24">
+                <path d="M14 2H6C4.895 2 4 2.895 4 4V20C4 21.105 4.895 22 6 22H18C19.105 22 20 21.105 20 20V8L14 2ZM13 19H11V15H7V13H11V9H13V13H17V15H13V19ZM13 9V3.5L18.5 9H13Z"></path>
+            </svg>
+        </div>
+        <div class="header-text">
+            <h1 id="header-title">Novo Orçamento</h1>
+            <p id="header-subtitle">Preencha os dados abaixo para gerar o documento.</p>
+        </div>
+    </header>
+
+    <div class="form-grid">
+        <div class="input-group">
+            <label>Tipo de Documento</label>
+            <select id="tipo-documento" onchange="alterarTipoDocumento()">
+                <option value="Orçamento">Orçamento</option>
+                <option value="Ordem de Serviço">Ordem de Serviço</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label>Nome da Oficina</label>
+            <input type="text" id="nome-oficina" placeholder="Sua Oficina">
+        </div>
+        <div class="input-group">
+            <label>Nome do Cliente</label>
+            <input type="text" id="nome-cliente" placeholder="João Silva">
+        </div>
+        <div class="input-group">
+            <label>Whatsapp do Cliente</label>
+            <input type="text" id="whats-cliente" placeholder="5511999999999">
+        </div>
+        <div class="input-group">
+            <label>Placa do Veículo</label>
+            <input type="text" id="placa-veiculo" placeholder="ABC-1234">
+        </div>
+        <div class="input-group">
+            <label>Veículo / Ano</label>
+            <input type="text" id="veiculo-ano" placeholder="Fiat Uno 2020">
+        </div>
+        <div class="input-group">
+            <label>KM Atual</label>
+            <input type="text" id="km-atual" placeholder="50.000">
+        </div>
+    </div>
+
+    <div class="items-header">
+        <h3 id="items-title">ITENS DO ORÇAMENTO</h3>
+        <button class="btn-add" id="btn-add-item">
+            <span>+</span> ADICIONAR ITEM
+        </button>
+    </div>
+
+    <div class="items-container" id="items-container">
+        <!-- Itens serão adicionados aqui via JS -->
+    </div>
+
+    <div class="footer-section">
+        <div class="input-group" style="width: 250px;">
+            <label>Forma de Pagamento</label>
+            <select id="forma-pagamento">
+                <option>Dinheiro</option>
+                <option>Cartão de Crédito</option>
+                <option>Cartão de Débito</option>
+                <option>Pix</option>
+            </select>
+        </div>
+        <div class="total-box">
+            <span id="total-label-text">VALOR TOTAL DO ORÇAMENTO</span>
+            <h2 id="total-value">R$ 0,00</h2>
+            
+            <div class="action-buttons">
+                <button class="btn-action btn-pdf" onclick="gerarPDF()">
+                    <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                    Baixar PDF
+                </button>
+                <button class="btn-action btn-img" onclick="gerarImagem()">
+                    <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                    Baixar Imagem
+                </button>
+                <button class="btn-action btn-whatsapp" onclick="enviarWhatsAppImagem()">
+                    <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.82 9.82 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.81 11.81 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.88 11.88 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.82 11.82 0 0 0-3.48-8.413z"/></svg>
+                    Enviar Imagem no WhatsApp
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Container oculto posicionado fora da tela para o html2canvas renderizar -->
+<div id="print-container" style="position: absolute; left: -9999px; top: 0; width: 800px; background: #FFFFFF; padding: 30px;"></div>
+
+<script>
+    const itemsContainer = document.getElementById('items-container');
+    const totalValueDisplay = document.getElementById('total-value');
+    const btnAddItem = document.getElementById('btn-add-item');
+
+    function alterarTipoDocumento() {
+        const tipo = document.getElementById('tipo-documento').value;
+        document.getElementById('page-title').textContent = `Novo/a ${tipo}`;
+        document.getElementById('header-title').textContent = `Novo/a ${tipo}`;
+        document.getElementById('items-title').textContent = `ITENS DA ${tipo.toUpperCase()}`;
+        document.getElementById('total-label-text').textContent = `VALOR TOTAL DA ${tipo.toUpperCase()}`;
+    }
+
+    const formatCurrency = (value) => {
+        return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    };
+
+    const updateTotals = () => {
+        let grandTotal = 0;
+        const rows = document.querySelectorAll('.item-row');
+
+        rows.forEach(row => {
+            const qtdInput = row.querySelector('.input-qtd');
+            const valInput = row.querySelector('.input-val');
+            const subInput = row.querySelector('.input-sub');
+
+            const qtd = parseFloat(qtdInput.value) || 0;
+            const val = parseFloat(valInput.value) || 0;
+            
+            const subtotal = qtd * val;
+            subInput.value = formatCurrency(subtotal);
+            
+            grandTotal += subtotal;
+        });
+
+        totalValueDisplay.textContent = formatCurrency(grandTotal);
+    };
+
+    const createItemRow = (isFirst = false) => {
+        const row = document.createElement('div');
+        row.classList.add('item-row');
+
+        row.innerHTML = `
+            <div class="input-group col-desc">
+                ${isFirst ? '<label>DESCRIÇÃO DO SERVIÇO / PEÇA</label>' : ''}
+                <input type="text" placeholder="Ex: Troca de Óleo">
+            </div>
+            <div class="input-group col-qtd">
+                ${isFirst ? '<label>QTD</label>' : ''}
+                <input type="number" class="input-qtd" value="1" min="1">
+            </div>
+            <div class="input-group col-val">
+                ${isFirst ? '<label>VALOR UNIT.</label>' : ''}
+                <input type="number" class="input-val" value="" placeholder="0.00" step="0.01">
+            </div>
+            <div class="input-group col-sub">
+                ${isFirst ? '<label>SUBTOTAL</label>' : ''}
+                <input type="text" class="input-sub" value="R$ 0,00" readonly style="background-color: #fff; font-weight: 600;">
+            </div>
+            <button class="btn-delete" title="Remover item">
+                <svg viewBox="0 0 24 24">
+                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                </svg>
+            </button>
+        `;
+
+        const inputs = row.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.addEventListener('input', (e) => {
+                e.target.setAttribute('value', e.target.value);
+                updateTotals();
+            });
+        });
+
+        row.querySelector('.btn-delete').addEventListener('click', () => {
+            row.remove();
+            if (itemsContainer.children.length === 0) {
+                itemsContainer.appendChild(createItemRow(true));
+            } else {
+                const firstRow = itemsContainer.firstElementChild;
+                if (!firstRow.querySelector('label')) {
+                    const newFirstRow = createItemRow(true);
+                    newFirstRow.querySelector('.col-desc input').value = firstRow.querySelector('.col-desc input').value;
+                    newFirstRow.querySelector('.input-qtd').value = firstRow.querySelector('.input-qtd').value;
+                    newFirstRow.querySelector('.input-val').value = firstRow.querySelector('.input-val').value;
+                    itemsContainer.replaceChild(newFirstRow, firstRow);
+                }
+            }
+            updateTotals();
+        });
+
+        return row;
+    };
+
+    itemsContainer.appendChild(createItemRow(true));
+
+    btnAddItem.addEventListener('click', () => {
+        const isFirst = itemsContainer.children.length === 0;
+        itemsContainer.appendChild(createItemRow(isFirst));
+    });
+
+    document.querySelectorAll('input[type="text"], input[type="number"]').forEach(input => {
+        input.addEventListener('input', (e) => {
+            e.target.setAttribute('value', e.target.value);
+        });
+    });
+
+    function montarHTMLVisual() {
+        const tipoDoc = document.getElementById('tipo-documento').value;
+        const nomeOficina = document.getElementById('nome-oficina').value || 'Sua Oficina';
+        const nomeCliente = document.getElementById('nome-cliente').value || 'Cliente';
+        const whatsCliente = document.getElementById('whats-cliente').value || '';
+        const placaVeiculo = document.getElementById('placa-veiculo').value || '';
+        const veiculoAno = document.getElementById('veiculo-ano').value || '';
+        const kmAtual = document.getElementById('km-atual').value || '';
+        const formaPagamento = document.getElementById('forma-pagamento').value;
+
+        let itensHTML = '';
+        let grandTotal = 0;
+        const rows = document.querySelectorAll('.item-row');
+        
+        rows.forEach(row => {
+            const desc = row.querySelector('.col-desc input').value || '';
+            const qtd = parseFloat(row.querySelector('.input-qtd').value) || 0;
+            const val = parseFloat(row.querySelector('.input-val').value) || 0;
+            const sub = qtd * val;
+            grandTotal += sub;
+
+            if (desc || val > 0) {
+                itensHTML += `
+                    <tr style="border-bottom: 1px solid #E9EDF7;">
+                        <td style="padding: 12px 8px; color: #2B3674; font-size: 14px;">${desc}</td>
+                        <td style="padding: 12px 8px; color: #2B3674; font-size: 14px; text-align: center;">${qtd}</td>
+                        <td style="padding: 12px 8px; color: #2B3674; font-size: 14px; text-align: right;">${formatCurrency(val)}</td>
+                        <td style="padding: 12px 8px; color: #1B2559; font-size: 14px; font-weight: 600; text-align: right;">${formatCurrency(sub)}</td>
+                    </tr>
+                `;
+            }
+        });
+
+        if (!itensHTML) {
+            itensHTML = `<tr><td colspan="4" style="padding: 12px; text-align: center; color: #A3AED0;">Nenhum item adicionado.</td></tr>`;
+        }
+
+        const agora = new Date();
+        const dataStr = agora.toLocaleDateString('pt-BR');
+        const horaStr = agora.toLocaleTimeString('pt-BR');
+        const docNum = Math.floor(100000 + Math.random() * 900000);
+        
+        const tipoUpper = tipoDoc.toUpperCase();
+        const artigoDest = tipoDoc.toLowerCase() === 'orçamento' ? 'destinado a' : 'destinada a';
+
+        return `
+            <div style="padding: 10px; font-family: 'Inter', sans-serif; background: #FFFFFF; color: #1B2559;">
+                <!-- Header -->
+                <div style="text-align: center; margin-bottom: 24px;">
+                    <div style="font-size: 11px; font-weight: 700; color: #5542F6; letter-spacing: 2px; margin-bottom: 8px;">
+                        ♦ ${tipoUpper} ♦
+                    </div>
+                    <h1 style="font-size: 28px; font-weight: 800; color: #1B2559; margin-bottom: 6px; text-transform: uppercase;">
+                        ${nomeOficina}
+                    </h1>
+                    <p style="font-size: 14px; color: #5542F6; font-style: italic;">
+                        ${tipoDoc} ${artigoDest} <strong style="color: #1B2559;">${nomeCliente}</strong>
+                    </p>
+                </div>
+
+                <div style="border-bottom: 2px solid #5542F6; margin-bottom: 24px;"></div>
+
+                <!-- Meta Box -->
+                <div style="background: #F4F7FE; border: 1px solid #E0E5F2; border-radius: 12px; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; font-size: 13px; font-weight: 600; color: #707EAE;">
+                    <div>Nº DOCUMENTO: <span style="color: #1B2559;">#${docNum}</span></div>
+                    <div>EMITIDO EM: <span style="color: #1B2559;">${dataStr}</span></div>
+                </div>
+
+                <!-- Cards -->
+                <div style="display: flex; gap: 16px; margin-bottom: 24px;">
+                    <div style="flex: 1; background: #FAFCFE; border: 1px solid #E0E5F2; border-radius: 16px; padding: 18px;">
+                        <div style="font-size: 11px; font-weight: 700; color: #5542F6; text-transform: uppercase; margin-bottom: 8px;">
+                            👤 DADOS DO CLIENTE
+                        </div>
+                        <div style="font-size: 15px; font-weight: 700; color: #1B2559; margin-bottom: 4px;">${nomeCliente}</div>
+                        ${whatsCliente ? `<div style="font-size: 13px; color: #707EAE;">📱 WhatsApp: ${whatsCliente}</div>` : ''}
+                    </div>
+
+                    <div style="flex: 1; background: #FAFCFE; border: 1px solid #E0E5F2; border-radius: 16px; padding: 18px;">
+                        <div style="font-size: 11px; font-weight: 700; color: #5542F6; text-transform: uppercase; margin-bottom: 8px;">
+                            🚗 DADOS DO VEÍCULO
+                        </div>
+                        <div style="font-size: 15px; font-weight: 700; color: #1B2559; margin-bottom: 4px;">${veiculoAno || 'Veículo não informado'}</div>
+                        <div style="font-size: 13px; color: #707EAE;">Placa: <strong style="color: #1B2559;">${placaVeiculo || '-'}</strong> · KM: <strong style="color: #1B2559;">${kmAtual || '-'}</strong></div>
+                    </div>
+                </div>
+
+                <!-- Items Table -->
+                <div style="margin-bottom: 24px;">
+                    <div style="font-size: 12px; font-weight: 700; color: #5542F6; text-transform: uppercase; margin-bottom: 12px;">
+                        📄 SERVIÇOS E PEÇAS ORÇADOS
+                    </div>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid #E0E5F2; text-align: left; font-size: 12px; font-weight: 700; color: #A3AED0;">
+                                <th style="padding: 8px; width: 50%;">Descrição</th>
+                                <th style="padding: 8px; width: 15%; text-align: center;">Qtd</th>
+                                <th style="padding: 8px; width: 17%; text-align: right;">Valor Unit.</th>
+                                <th style="padding: 8px; width: 18%; text-align: right;">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${itensHTML}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Payment & Total -->
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; background: #F4F7FE; border-radius: 16px; padding: 24px; margin-bottom: 40px;">
+                    <div>
+                        <div style="font-size: 11px; font-weight: 700; color: #5542F6; text-transform: uppercase; margin-bottom: 6px;">
+                            FORMA DE PAGAMENTO
+                        </div>
+                        <div style="font-size: 16px; font-weight: 700; color: #1B2559;">${formaPagamento}</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 11px; font-weight: 700; color: #A3AED0; text-transform: uppercase; margin-bottom: 4px;">
+                            VALOR TOTAL
+                        </div>
+                        <div style="font-size: 32px; font-weight: 800; color: #5542F6;">
+                            ${formatCurrency(grandTotal)}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Signatures -->
+                <div style="display: flex; justify-content: space-between; gap: 40px; margin-top: 60px; margin-bottom: 30px;">
+                    <div style="flex: 1; text-align: center;">
+                        <div style="font-family: 'Caveat', cursive; font-size: 28px; color: #5542F6; margin-bottom: -4px; transform: rotate(-4deg);">${nomeOficina}</div>
+                        <div style="border-top: 1px solid #A3AED0; padding-top: 8px; font-size: 12px; color: #707EAE; font-weight: 600;">
+                            Assinatura da Oficina
+                        </div>
+                    </div>
+                    <div style="flex: 1; text-align: center;">
+                        <div style="height: 28px; margin-bottom: -4px;"></div>
+                        <div style="border-top: 1px solid #A3AED0; padding-top: 8px; font-size: 12px; color: #707EAE; font-weight: 600;">
+                            Assinatura do Cliente
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Date -->
+                <div style="text-align: center; font-size: 11px; color: #A3AED0; border-top: 1px solid #E9EDF7; padding-top: 16px;">
+                    Documento gerado em ${dataStr}, ${horaStr} · ${nomeOficina}
+                </div>
+            </div>
+        `;
+    }
+
+    function gerarPDF() {
+        const printContainer = document.getElementById('print-container');
+        printContainer.innerHTML = montarHTMLVisual();
+        
+        const tipo = document.getElementById('tipo-documento').value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '_');
+
+        setTimeout(() => {
+            html2canvas(printContainer, { scale: 2, useCORS: true }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                
+                const pageWidth = pdf.internal.pageSize.getWidth();
+                const pageHeight = pdf.internal.pageSize.getHeight();
+                
+                const imgWidth = pageWidth;
+                const imgHeight = (canvas.height * pageWidth) / canvas.width;
+                
+                let heightLeft = imgHeight;
+                let position = 0;
+
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+
+                while (heightLeft >= 0) {
+                    position = heightLeft - imgHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+
+                pdf.save(`${tipo}_oficina.pdf`);
+                printContainer.innerHTML = '';
+            }).catch(() => {
+                printContainer.innerHTML = '';
+            });
+        }, 300);
+    }
+
+    function gerarImagem() {
+        const printContainer = document.getElementById('print-container');
+        printContainer.innerHTML = montarHTMLVisual();
+        
+        const tipo = document.getElementById('tipo-documento').value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '_');
+
+        setTimeout(() => {
+            html2canvas(printContainer, { scale: 2, useCORS: true }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `${tipo}_oficina.png`;
+                link.href = canvas.toDataURL('image/png');
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                printContainer.innerHTML = '';
+            }).catch(() => {
+                printContainer.innerHTML = '';
+            });
+        }, 200);
+    }
+
+    function enviarWhatsAppImagem() {
+        const numeroInput = document.getElementById('whats-cliente').value;
+        const nomeCliente = document.getElementById('nome-cliente').value || "Cliente";
+        const valorTotal = document.getElementById('total-value').innerText;
+        const tipoDoc = document.getElementById('tipo-documento').value.toLowerCase();
+        
+        const numeroLimpo = numeroInput.replace(/\D/g, '');
+
+        if (!numeroLimpo) {
+            alert('Por favor, preencha o número de WhatsApp do cliente!');
+            return;
+        }
+
+        const printContainer = document.getElementById('print-container');
+        printContainer.innerHTML = montarHTMLVisual();
+
+        setTimeout(() => {
+            html2canvas(printContainer, { scale: 2, useCORS: true }).then(canvas => {
+                const tipoSlug = document.getElementById('tipo-documento').value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '_');
+                
+                const link = document.createElement('a');
+                link.download = `${tipoSlug}_oficina.png`;
+                link.href = canvas.toDataURL('image/png');
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                canvas.toBlob(blob => {
+                    if (navigator.clipboard && window.ClipboardItem) {
+                        try {
+                            navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+                        } catch (e) {
+                            console.log('Clipboard error:', e);
+                        }
+                    }
+                });
+
+                printContainer.innerHTML = '';
+
+                const mensagem = `Olá ${nomeCliente}, tudo bem? Segue o resumo da sua ${tipoDoc} no valor de *${valorTotal}*.`;
+                const url = `https://wa.me/${numeroLimpo}?text=${encodeURIComponent(mensagem)}`;
+                
+                setTimeout(() => {
+                    window.open(url, '_blank');
+                }, 800);
+            }).catch(() => {
+                printContainer.innerHTML = '';
+            });
+        }, 200);
+    }
+</script>
+</body>
+</html>
